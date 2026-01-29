@@ -1,0 +1,2492 @@
+﻿
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>대구 북구 칠곡 헬스장 혼잡도 체크</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --card-alt: #f4f5fb;
+      --text: #111827;
+      --muted: #6b7280;
+      --shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+      --shadow-soft: 0 6px 16px rgba(17, 24, 39, 0.06);
+      --radius: 20px;
+      --radius-lg: 22px;
+      --radius-sm: 18px;
+      --green: #cfeedd;
+      --yellow: #f7e6b0;
+      --red: #f4c6c6;
+      --line: #e8eaf2;
+      --focus: #b9b8ff;
+      --primary: #6d6afd;
+      --primary-ink: #ffffff;
+      --secondary: #eceeff;
+      --font-title: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      --font-body: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background:
+        radial-gradient(900px 520px at 10% -10%, rgba(109, 106, 253, 0.14) 0%, transparent 60%),
+        radial-gradient(900px 520px at 90% 0%, rgba(109, 106, 253, 0.1) 0%, transparent 58%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 76px 18px 88px;
+    }
+    .sticky-search {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(246, 247, 251, 0.92);
+      backdrop-filter: blur(8px);
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(232, 234, 242, 0.9);
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border-radius: 999px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--line);
+    }
+    .search-bar input {
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-body);
+    }
+    .section {
+      margin-top: 28px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 10px 0 14px;
+      font-family: var(--font-title);
+      letter-spacing: -0.2px;
+      text-align: left;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-soft);
+      padding: 18px;
+      border: 1px solid var(--line);
+    }
+    .gym-list {
+      display: grid;
+      gap: 12px;
+    }
+    .gym-card {
+      display: grid;
+      gap: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+      text-align: left;
+      position: relative;
+    }
+    .gym-card:focus-within,
+    .gym-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
+      border: 1px solid #d8e1ec;
+    }
+    .gym-name {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: var(--font-title);
+    }
+    .gym-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .name-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-recent {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      color: #2a3a4f;
+      background: #dbe7f7;
+      border: 1px solid #cbd9ee;
+      white-space: nowrap;
+      transition: opacity 0.32s ease, transform 0.32s ease;
+    }
+    .badge-recent.fade-out {
+      opacity: 0;
+      transform: translateY(-2px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .badge-recent {
+        transition: none;
+      }
+    }
+    .favorite-highlight {
+      animation: favoritePulse 1.4s ease-out 1;
+      box-shadow: 0 0 0 4px rgba(182, 206, 235, 0.45);
+      border-color: #c8d8ee;
+    }
+    @keyframes favoritePulse {
+      0% { box-shadow: 0 0 0 0 rgba(182, 206, 235, 0.0); }
+      30% { box-shadow: 0 0 0 6px rgba(182, 206, 235, 0.55); }
+      100% { box-shadow: 0 0 0 0 rgba(182, 206, 235, 0.0); }
+    }
+    .gym-area {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      width: fit-content;
+    }
+    .pill.small { font-size: 12px; padding: 3px 8px; }
+    .pill.large { font-size: 14px; padding: 6px 12px; }
+    .pill.green { background: var(--green); }
+    .pill.yellow { background: var(--yellow); }
+    .pill.red { background: var(--red); }
+    .pill-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .size-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #eceeff;
+      color: #4f4bd8;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #d9ddf4;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .meta-chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f0f2fb;
+      border: 1px solid #e1e4f3;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .detail-name {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      font-family: var(--font-title);
+    }
+    .detail-area { color: var(--muted); }
+    .status-card {
+      display: grid;
+      gap: 8px;
+    }
+    .status-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .status-desc { color: var(--muted); }
+    .time-now { font-size: 13px; color: var(--muted); }
+    .card-title {
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px 18px;
+      font-size: 16px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: var(--font-body);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, border 0.12s ease;
+    }
+    .btn:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-ink);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(109, 106, 253, 0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-outline {
+      background: #f2f3fb;
+      border: 1px solid #d8dbee;
+      color: var(--text);
+    }
+    .btn-outline:hover { background: #eceeff; }
+    .btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .machine-list {
+      display: grid;
+      gap: 10px;
+    }
+    .machine-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--card-alt);
+      border: 1px solid #e7edf6;
+    }
+    .machine-icon { font-size: 20px; }
+
+    .link-btn {
+      margin-top: 8px;
+      border: none;
+      background: none;
+      color: #4b5563;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 0;
+      font-family: var(--font-body);
+    }
+    .link-btn:focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+    .footer {
+      position: sticky;
+      bottom: 0;
+      width: 100%;
+      background: rgba(238, 242, 246, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 12px 16px;
+      border-top: 1px solid rgba(226, 232, 240, 0.8);
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%);
+      background: #1f2a3a;
+      color: #f7f7f7;
+      padding: 12px 16px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 30;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 30, 40, 0.28);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      padding: 16px;
+    }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      width: min(480px, 100%);
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+    .modal h3 { margin: 0; font-size: 18px; }
+
+    .view { display: none; opacity: 0; transition: opacity 0.28s ease; }
+    .view.active { display: block; opacity: 1; }
+    .view.view-intro.active { display: grid; }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--card-alt);
+      border: 1px solid #e4ebf5;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .chip.active { background: #eceeff; color: #2f2bd8; border-color: #d1d6f4; }
+
+    .trainer-list {
+      display: grid;
+      gap: 12px;
+    }
+    .trainer-card {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card);
+      box-shadow: var(--shadow-soft);
+    }
+    .trainer-card-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .trainer-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(140deg, #f2f3ff 0%, #eef1ff 100%);
+      border: 1px solid #dfe3f2;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #4b5563;
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      flex-shrink: 0;
+    }
+    .trainer-thumb.has-image {
+      background-size: cover;
+      background-position: center;
+      color: transparent;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag-chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f1f2fb;
+      border: 1px solid #e2e4f2;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .trainer-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .trainer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .review-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .review-actions .btn-primary {
+      flex: 1;
+    }
+    .review-form {
+      display: grid;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: #f7f8ff;
+      border: 1px solid #e3e5f2;
+    }
+    .star-row {
+      display: flex;
+      gap: 6px;
+    }
+    .star-btn {
+      border: 1px solid #d8dbee;
+      background: #f2f3fb;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #4b5563;
+    }
+    .star-btn.active {
+      background: #eceeff;
+      border-color: #c9cdf1;
+      color: #3f3bd6;
+    }
+    .trainer-photo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #f2f3ff 0%, #eef1ff 100%);
+      border: 1px solid #dfe3f2;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #4b5563;
+      font-size: 20px;
+      letter-spacing: -0.4px;
+    }
+    .trainer-photo.has-image {
+      background-size: cover;
+      background-position: center;
+      color: transparent;
+    }
+    .trainer-detail-head {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .review-list {
+      display: grid;
+      gap: 10px;
+    }
+    .review-item {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: #f7f8ff;
+      border: 1px solid #e3e5f2;
+      display: grid;
+      gap: 6px;
+    }
+    .review-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+    .review-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .review-body {
+      font-size: 14px;
+      color: #374151;
+    }
+    .review-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .btn-compact {
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 14px;
+    }
+    .sub-card {
+      background: #f7f7ff;
+      border: 1px solid #e3e4f6;
+      box-shadow: none;
+    }
+    .muted-card {
+      background: #f4f5fb;
+      color: var(--muted);
+    }
+    .insight-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .insight-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: #f7f8ff;
+      border: 1px solid #e3e5f2;
+      font-size: 13px;
+      color: #4b5563;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .insight-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .modal-backdrop.owner-info {
+      background: rgba(17, 24, 39, 0.35);
+    }
+    .modal-backdrop.photo-viewer {
+      background: rgba(15, 18, 24, 0.7);
+    }
+    .modal-backdrop.review-modal {
+      background: rgba(15, 18, 24, 0.6);
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      backdrop-filter: blur(6px);
+    }
+    .review-modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      width: min(520px, 92vw);
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      transform: translateY(10px) scale(0.96);
+      opacity: 0;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .modal-backdrop.review-modal.show {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-backdrop.review-modal.show .review-modal {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .review-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .review-title-icon {
+      font-size: 16px;
+      line-height: 1;
+      color: var(--primary);
+    }
+    .photo-modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      width: min(420px, 92vw);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+    .photo-modal img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      display: block;
+    }
+    .radio-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .radio-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f7f8ff;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .radio-pill input {
+      margin: 0;
+    }
+    .cta-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .cta-row .link-btn {
+      margin-top: 0;
+    }
+    .input-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fbfbff;
+      font-size: 15px;
+      font-family: var(--font-body);
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .view-intro {
+      min-height: 100vh;
+      align-items: center;
+      justify-items: center;
+      text-align: center;
+      padding: 40px 0 56px;
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(246, 241, 226, 0.7), transparent 60%),
+        radial-gradient(900px 520px at 85% 0%, rgba(230, 238, 249, 0.7), transparent 58%);
+    }
+    .intro-hero {
+      position: relative;
+      width: min(720px, 100%);
+      padding: 28px 24px 32px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(140deg, #f6f7ff 0%, #f1f1ff 60%, #ffffff 100%);
+      box-shadow: var(--shadow);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .intro-hero::before {
+      content: "";
+      position: absolute;
+      inset: -30% -20% auto auto;
+      height: 220px;
+      width: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(109, 106, 253, 0.35), transparent 60%);
+      filter: blur(2px);
+    }
+    .intro-hero::after {
+      content: "";
+      position: absolute;
+      left: -40px;
+      bottom: -60px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(109, 106, 253, 0.18), transparent 62%);
+      filter: blur(3px);
+    }
+    .intro-card {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+    }
+    .intro-logo {
+      width: clamp(280px, 80vw, 380px);
+      height: auto;
+      display: block;
+    }
+    .intro-title {
+      margin: 6px 0 0;
+      font-size: clamp(30px, 5vw, 34px);
+      font-weight: 700;
+      font-family: var(--font-title);
+      letter-spacing: -0.4px;
+    }
+    .intro-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .intro-card .btn-primary {
+      width: min(320px, 100%);
+      margin-top: 8px;
+    }
+    .status-card .detail-name {
+      font-size: 30px;
+    }
+    .actions {
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+    .actions .btn {
+      width: min(520px, 100%);
+    }
+    .card .section-title {
+      text-align: left;
+    }
+
+    /* // HOME NAV ADDED */
+    .home-nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+    /* // HOME NAV ADDED */
+    .home-divider {
+      height: 1px;
+      background: rgba(232, 234, 242, 0.9);
+      margin: 14px 0 8px;
+      border-radius: 999px;
+    }
+    /* // HOME NAV ADDED */
+    .home-card {
+      display: grid;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+      cursor: pointer;
+    }
+    /* // HOME NAV ADDED */
+    .home-card:hover,
+    .home-card:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
+      border-color: #d8e1ec;
+      outline: none;
+    }
+    /* // HOME NAV ADDED */
+    .home-card-title {
+      font-size: 17px;
+      font-weight: 700;
+      font-family: var(--font-title);
+      letter-spacing: -0.2px;
+    }
+    /* // HOME NAV ADDED */
+    .home-card-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    /* // HOME NAV ADDED */
+    .home-card-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    /* // HOME NAV ADDED */
+    .home-card-body {
+      display: grid;
+      gap: 2px;
+    }
+
+    @media (max-width: 600px) {
+      .app {
+        padding: 68px 16px 80px;
+      }
+      .intro-hero {
+        padding: 24px 18px 28px;
+      }
+      .section-title {
+        font-size: 19px;
+      }
+    }
+    @media (max-width: 720px) {
+      .home-nav {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sticky-search">
+    <div class="search-bar" role="search">
+      <span aria-hidden="true">🔍</span>
+      <input id="searchInput" type="text" placeholder="헬스장 이름 검색 (예: 어바웃더핏)" aria-label="헬스장 검색" />
+    </div>
+  </div>
+
+  <main class="app">
+    <section id="viewIntro" class="view view-intro">
+      <div class="intro-hero">
+        <div class="intro-card">
+          <img class="intro-logo" src="./logo.png" alt="GymNow 로고" />
+          <h1 class="intro-title">오늘의 헬스장을 선택하세요.</h1>
+          <p class="intro-subtitle">실시간 혼잡도를 깔끔하게 확인합니다.</p>
+          <button id="btnIntroStart" class="btn btn-primary">시작하기</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewSearch" class="view">
+      <div class="section" id="favoriteSection" style="display:none;">
+        <div class="section-title">내 헬스장</div>
+        <div id="favoriteCard" class="gym-list" aria-live="polite"></div>
+      </div>
+      <div class="section-title" id="occupancy">헬스장 목록</div>
+      <div id="gymList" class="gym-list" aria-live="polite"></div>
+    </section>
+
+    <section id="viewRealtime" class="view">
+      <div class="card">
+        <button id="btnBackRealtime" class="link-btn">← 뒤로</button>
+        <div class="detail-name" id="rtGymName">-</div>
+        <div class="gym-area" id="rtGymArea">대구 북구 칠곡</div>
+        <div class="gym-area" id="rtFormerNames" style="display:none;">이전 명칭: -</div>
+        <div class="gym-area" id="rtSizeText">중형 센터</div>
+        <div class="pill-row">
+          <div id="rtSizeLabel" class="size-badge">M</div>
+          <div id="rtPill" class="pill green">여유</div>
+        </div>
+      </div>
+
+      <!-- // HOME NAV ADDED -->
+      <div class="section"></div>
+      <!-- // HOME NAV ADDED -->
+      <div class="home-nav">
+        <!-- // HOME NAV ADDED -->
+        <button class="card home-card" type="button" data-home-target="occupancy" data-home-view="viewRealtime">
+          <div class="home-card-icon">🟢</div>
+          <div class="home-card-body">
+            <div class="home-card-title">혼잡도 체크</div>
+            <div class="home-card-desc">지금 갈만한가?</div>
+          </div>
+        </button>
+        <!-- // HOME NAV ADDED -->
+        <button class="card home-card" type="button" data-home-target="equipment" data-home-view="viewRealtime">
+          <div class="home-card-icon">🏋</div>
+          <div class="home-card-body">
+            <div class="home-card-title">기구/시설</div>
+            <div class="home-card-desc">뭐가 있나?</div>
+          </div>
+        </button>
+        <!-- // HOME NAV ADDED -->
+        <button class="card home-card" type="button" data-home-target="trainers" data-home-view="viewRealtime">
+          <div class="home-card-icon">🧑🏫</div>
+          <div class="home-card-body">
+            <div class="home-card-title">트레이너 리뷰</div>
+            <div class="home-card-desc">괜찮은 트레이너 찾기</div>
+          </div>
+        </button>
+        <!-- // HOME NAV ADDED -->
+        <button class="card home-card" type="button" data-home-target="apply" data-home-view="viewTrainerApply">
+          <div class="home-card-icon">📝</div>
+          <div class="home-card-body">
+            <div class="home-card-title">제휴/신청</div>
+            <div class="home-card-desc">등록/데모/피드백</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- // HOME NAV ADDED -->
+      <div class="home-divider"></div>
+
+      <div data-realtime-category="occupancy">
+        <div class="section"></div>
+        <div class="card sub-card">
+          <div class="section-title card-title">혼잡도 체크 사용 방법</div>
+          <div class="gym-area">1) 헬스장 도착 시 "헬스장 도착"을 눌러 체크인하세요.</div>
+          <div class="gym-area">2) 운동이 끝나면 "운동 끝"을 눌러 간단 설문을 완료하세요.</div>
+          <div class="gym-area">3) 체크인과 설문이 누적되면 혼잡도 추정이 더 정확해져요.</div>
+        </div>
+
+        <div class="section"></div>
+        <div class="card status-card">
+          <div class="section-title card-title">현재 혼잡도</div>
+          <div id="rtRecommendation" class="status-desc">지금 가도 괜찮아요</div>
+          <div class="meta-row">
+            <div id="rtRecentCheckins" class="meta-chip">최근 15분 체크인 0명</div>
+            <div id="rtRecentSurveys" class="meta-chip">최근 7일 응답 0건</div>
+          </div>
+        </div>
+
+        <div class="section"></div>
+        <div class="actions">
+          <button id="btnCheckin" class="btn btn-primary">헬스장 도착</button>
+          <button id="btnCheckout" class="btn btn-outline">운동 끝</button>
+        </div>
+
+        <div class="section"></div>
+        <button id="btnFavoriteSet" class="btn btn-outline"> 내 헬스장으로 설정</button>
+
+      </div>
+
+      <div data-realtime-category="equipment">
+        <div class="section"></div>
+        <div class="card" id="equipment">
+          <div class="section-title card-title">예상 기구 미리보기</div>
+          <div class="status-title" id="centerTypeLabel">🏋 중형 센터로 보여요</div>
+          <div class="status-desc" id="centerTypeDesc">프리웨이트와 주요 머신은 대부분 갖춰져 있을 가능성이 높아요.</div>
+          <div class="section"></div>
+          <div class="machine-list" id="centerTypePreview"></div>
+          <div class="time-now">실제 구성은 다를 수 있으며, 이용자 피드백으로 보정됩니다.</div>
+        </div>
+      </div>
+
+      <div data-realtime-category="trainers">
+        <div class="section"></div>
+        <div class="card">
+          <div class="section-title card-title" id="trainers">트레이너 리뷰</div>
+          <div id="trainerList" class="trainer-list"></div>
+        </div>
+
+        <div class="section"></div>
+        <div class="card">
+          <div class="section-title card-title">트레이너로 등록하고 싶나요?</div>
+          <div class="cta-row">
+            <button id="btnTrainerApply" class="btn btn-primary btn-compact">등록 신청</button>
+            <a id="trainerContactLink" class="link-btn" target="_blank" rel="noopener">운영자 문의</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewSurvey" class="view">
+      <div class="card">
+        <button id="btnBackSurvey" class="link-btn">← 뒤로</button>
+        <div class="section-title">오늘도 운동했나요?</div>
+        <div class="gym-area">완료 후 간단히 알려주면 혼잡도 추정이 더 정확해져요.</div>
+        <div class="section"></div>
+        <label class="input-label">운동 중 기다린 기구가 있었나요?</label>
+        <div id="surveyWait" class="chip-row"></div>
+        <label class="input-label">다음에도 이 헬스장을 이용할 예정인가요?</label>
+        <div id="surveyReturn" class="chip-row"></div>
+      </div>
+    </section>
+
+    <section id="viewTrainerSurvey" class="view">
+      <div class="card">
+        <button id="btnBackTrainerSurvey" class="link-btn">← 뒤로</button>
+        <div class="section-title" id="trainerSurveyName">트레이너 평가</div>
+        <div class="gym-area">3개 항목만 체크해 주세요.</div>
+        <div class="section"></div>
+        <label class="input-label">설명이 충분히 이해됐나요?</label>
+        <div class="chip-row" id="trainerQClarity"></div>
+        <label class="input-label">진행 속도는 적절했나요?</label>
+        <div class="chip-row" id="trainerQPacing"></div>
+        <label class="input-label">다음에도 같은 트레이너를 선택할까요?</label>
+        <div class="chip-row" id="trainerQReselect"></div>
+      </div>
+    </section>
+
+    <section id="viewTrainerDetail" class="view">
+      <div class="card">
+        <button id="btnBackTrainerDetail" class="link-btn">← 뒤로</button>
+        <div class="trainer-detail-head">
+          <div class="trainer-photo" id="trainerDetailPhoto">TR</div>
+          <div>
+            <div class="section-title" id="trainerDetailName">트레이너</div>
+            <div class="gym-area" id="trainerDetailRole">-</div>
+            <div class="trainer-meta" id="trainerDetailMeta"></div>
+          </div>
+        </div>
+        <div class="tag-row" id="trainerDetailTags"></div>
+        <div class="section"></div>
+        <div class="review-actions">
+          <button id="btnTrainerDetailReview" class="btn btn-primary btn-compact">리뷰 남기기</button>
+          <button id="btnTrainerDetailContact" class="btn btn-outline btn-compact">상담 문의</button>
+        </div>
+        <div class="section"></div>
+        <div class="section-title card-title">리뷰</div>
+        <div id="trainerDetailFilters" class="chip-row"></div>
+        <div id="trainerDetailReviews" class="review-list"></div>
+      </div>
+    </section>
+
+    <section id="viewTrainerApply" class="view">
+      <div class="card" id="apply">
+        <button id="btnBackTrainerApply" class="link-btn">← 뒤로</button>
+        <div class="section-title">트레이너 등록 신청</div>
+        <div class="gym-area">1분이면 끝나요. 지금은 신청만 받고 있어요.</div>
+        <div class="section"></div>
+        <form id="trainerApplyForm" action="https://docs.google.com/forms/d/17snXyUSvNUbZalYEvZJ5Q5U183uzhHRbHSqcs2Sf88c/formResponse" method="POST" target="hidden_iframe">
+          <label class="input-label">이름</label>
+          <input id="applyName" name="entry.1782614919" class="input" placeholder="김OO" />
+          <label class="input-label">연락처</label>
+          <input id="applyContact" name="entry.1278194848" class="input" placeholder="휴대폰 또는 카카오톡 ID" />
+          <label class="input-label">활동 헬스장</label>
+          <select id="applyGym" name="entry.243865148" class="input"></select>
+          <label class="input-label">전문 분야 (1~3개)</label>
+          <div id="applySpecialties" class="chip-row"></div>
+          <label class="input-label">경력 (선택)</label>
+          <select id="applyExperience" name="entry.949616156" class="input">
+            <option value="">선택 안 함</option>
+            <option>1년 미만</option>
+            <option>1~3년</option>
+            <option>3~5년</option>
+            <option>5년+</option>
+          </select>
+          <div class="section"></div>
+          <button id="btnApplySubmit" class="btn btn-primary" type="submit">신청 제출</button>
+          <div class="gym-area">신청 후, 일부 트레이너 분들께 추가 정보를 요청드릴 수 있습니다.</div>
+          <div class="section"></div>
+        </form>
+        <div class="card sub-card">
+          <div class="section-title card-title">곧 제공되는 기능</div>
+          <div class="gym-area">• 프로필 상단 노출</div>
+          <div class="gym-area">• 상담 문의 링크</div>
+          <div class="gym-area">• 내 점수/응답 리포트</div>
+          <div class="gym-area">초기 등록 트레이너는 우선 노출 혜택이 제공될 수 있어요.</div>
+        </div>
+
+        <div class="section"></div>
+        <div class="card muted-card" id="ownerInsightCard">
+          <div class="section-title card-title">운영자 인사이트</div>
+          <div class="gym-area">혼잡도/체류/피크 분석 리포트 (준비 중)</div>
+          <div class="insight-list">
+            <div class="insight-item"><span>오늘 피크 시간: 19:30~21:00</span><span class="insight-label">샘플</span></div>
+            <div class="insight-item"><span>최근 7일 평균 혼잡도: 보통</span><span class="insight-label">샘플</span></div>
+            <div class="insight-item"><span>회원 체류 추정: 68분</span><span class="insight-label">샘플</span></div>
+          </div>
+          <div class="cta-row">
+            <button id="btnOwnerApply" class="btn btn-primary btn-compact">데모 신청</button>
+            <button id="btnOwnerInfo" class="btn btn-outline btn-compact">자세히</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewOwnerApply" class="view">
+      <div class="card">
+        <button id="btnBackOwnerApply" class="link-btn">← 뒤로</button>
+        <div class="section-title">운영자 데모 신청</div>
+        <div class="gym-area">3분이면 끝나요. 현재는 일부 센터만 베타 운영 중이에요.</div>
+        <div class="section"></div>
+        <label class="input-label">센터명</label>
+        <select id="ownerGym" class="input"></select>
+        <label class="input-label">담당자 이름</label>
+        <input id="ownerName" class="input" placeholder="홍길동" />
+        <label class="input-label">연락처</label>
+        <input id="ownerContact" class="input" placeholder="휴대폰 또는 이메일" />
+        <label class="input-label">역할</label>
+        <div class="radio-row" id="ownerRole">
+          <label class="radio-pill"><input type="radio" name="ownerRole" value="대표" /> 대표</label>
+          <label class="radio-pill"><input type="radio" name="ownerRole" value="매니저" /> 매니저</label>
+          <label class="radio-pill"><input type="radio" name="ownerRole" value="총괄" /> 총괄</label>
+          <label class="radio-pill"><input type="radio" name="ownerRole" value="기타" /> 기타</label>
+        </div>
+        <label class="input-label">관심 기능 (1~3개)</label>
+        <div id="ownerInterests" class="chip-row"></div>
+        <label class="input-label">현재 출입 시스템 (선택)</label>
+        <select id="ownerAccessSystem" class="input">
+          <option value="">선택 안 함</option>
+          <option>얼굴인식 키오스크</option>
+          <option>QR/바코드</option>
+          <option>회원번호</option>
+          <option>없음/기타</option>
+        </select>
+        <div class="section"></div>
+        <button id="btnOwnerSubmit" class="btn btn-primary">신청 제출</button>
+        <div class="section"></div>
+        <div class="card sub-card">
+          <div class="section-title card-title">어떤 식으로 도움이 되나요?</div>
+          <div class="gym-area">• 피크 시간대를 분산시켜 신규 회원 불만을 줄여요</div>
+          <div class="gym-area">• 인력/트레이너 배치를 데이터로 결정해요</div>
+          <div class="gym-area">• 센터 홍보 시 한산한 시간 근거로 설득할 수 있어요</div>
+          <div class="gym-area">실제 운영 데이터는 센터별 상황에 따라 다를 수 있어요.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">이 정보는 실제 이용자 경험을 기반으로 한 참고용 정보입니다.</div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">완료!</div>
+
+  <div id="favoriteSuggestBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div>
+        <h3>이 헬스장을 자주 이용하시네요.</h3>
+        <div class="gym-area">내 헬스장으로 설정할까요?</div>
+      </div>
+      <div class="actions">
+        <button id="favoriteSuggestAccept" class="btn btn-primary">설정하기</button>
+        <button id="favoriteSuggestDismiss" class="btn btn-outline">나중에</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ownerInfoBackdrop" class="modal-backdrop owner-info" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div>
+        <h3>운영자 인사이트란?</h3>
+        <div class="gym-area">GymNow는 체크인/설문 기반으로 시간대별 혼잡과 운영 지표를 추정합니다. 운영자는 피크 분산, 인력 배치, 신규 회원 설득에 활용할 수 있어요.</div>
+      </div>
+      <div class="actions">
+        <button id="ownerInfoClose" class="btn btn-primary btn-compact">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="trainerPhotoBackdrop" class="modal-backdrop photo-viewer" role="dialog" aria-modal="true">
+    <div class="photo-modal">
+      <img id="trainerPhotoModalImg" alt="트레이너 사진" />
+      <button id="trainerPhotoClose" class="btn btn-outline btn-compact">닫기</button>
+    </div>
+  </div>
+
+  <div id="trainerReviewBackdrop" class="modal-backdrop review-modal" role="dialog" aria-modal="true">
+      <div class="review-modal">
+        <div class="section-title card-title review-title"><span class="review-title-icon">💬</span><span id="trainerReviewTitle">리뷰 남기기</span></div>
+        <div class="gym-area" id="trainerReviewAvg">평점 -</div>
+      <div class="review-form" id="trainerReviewForm">
+        <label class="input-label">별점</label>
+        <div class="star-row" id="trainerReviewStars">
+          <button type="button" class="star-btn" data-rating="1">★</button>
+          <button type="button" class="star-btn" data-rating="2">★ ★</button>
+          <button type="button" class="star-btn" data-rating="3">★ ★ ★</button>
+          <button type="button" class="star-btn" data-rating="4">★ ★ ★ ★</button>
+          <button type="button" class="star-btn" data-rating="5">★ ★ ★ ★ ★</button>
+        </div>
+        <label class="input-label">작성자 (선택)</label>
+        <input id="trainerReviewAuthor" class="input" placeholder="익명" />
+        <label class="input-label">리뷰</label>
+        <textarea id="trainerReviewText" class="input" rows="4" placeholder="어떤 점이 좋았는지 알려주세요."></textarea>
+        <div class="review-actions">
+          <button id="trainerReviewCancel" class="btn btn-outline btn-compact" type="button">취소</button>
+          <button id="trainerReviewSubmit" class="btn btn-primary btn-compact" type="button">리뷰 등록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+  <script>
+    const GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+
+    const MASTER_MACHINES = [
+      { key: "power_rack", name: "파워랙", icon: "🏋️", category: "프리웨이트" },
+      { key: "smith", name: "스미스 머신", icon: "🧱", category: "프리웨이트" },
+      { key: "bench_flat", name: "플랫 벤치", icon: "🛏️", category: "프리웨이트" },
+      { key: "dumbbell_zone", name: "덤벨존", icon: "🏋️‍♀️", category: "프리웨이트" },
+      { key: "cable", name: "케이블 머신", icon: "🧵", category: "상체" },
+      { key: "lat_pulldown", name: "랫풀다운", icon: "🧲", category: "상체" },
+      { key: "chest_press", name: "체스트 프레스", icon: "💥", category: "상체" },
+      { key: "leg_press", name: "레그프레스", icon: "🦵", category: "하체" },
+      { key: "leg_extension", name: "레그 익스텐션", icon: "🦵", category: "하체" },
+      { key: "treadmill", name: "런닝머신", icon: "🏃", category: "유산소" },
+      { key: "bike", name: "사이클", icon: "🚴‍♂️", category: "유산소" }
+    ];
+    const SMALL_GYM_SET = [
+      "power_rack", "smith", "bench_flat", "dumbbell_zone",
+      "cable", "lat_pulldown", "leg_press", "treadmill"
+    ];
+    const MEDIUM_GYM_SET = [
+      "power_rack", "smith", "bench_flat", "dumbbell_zone",
+      "cable", "lat_pulldown", "chest_press", "leg_press", "leg_extension",
+      "treadmill", "bike"
+    ];
+    const LARGE_GYM_SET = [
+      "power_rack", "smith", "bench_flat", "dumbbell_zone", "cable",
+      "lat_pulldown", "chest_press", "leg_press", "leg_extension",
+      "treadmill", "bike"
+    ];
+    const MACHINE_MAP = MASTER_MACHINES.reduce((acc, m) => {
+      acc[m.key] = m;
+      return acc;
+    }, {});
+
+    const gyms = [
+      {
+        id: "about_the_fit",
+        name: "어바웃더핏",
+        formerNames: ["브로인제이 휘트니스"],
+        area: "태전동",
+        address: "대구 북구 학정로 149",
+        machineKeys: [
+          "power_rack",
+          "smith",
+          "cable",
+          "leg_press",
+          "lat_pulldown",
+          "dumbbell_zone",
+          "treadmill"
+        ],
+        trainers: [
+          { id: "t1", name: "김민지", role: "전문 트레이너", years: 5, tags: ["다이어트", "바디프로필"], score: 4.8, photo: "assets/trainer-1.jpg" },
+          { id: "t2", name: "박준호", role: "교정/재활", years: 7, tags: ["재활", "자세교정"], score: 4.6, photo: "assets/trainer-2.jpg" }
+        ]
+      },
+      {
+        id: "fm_fitness_taejeon",
+        name: "FM피트니스 태전점",
+        area: "태전동",
+        address: "",
+        machineKeys: ["power_rack", "bench_flat", "dumbbell_zone", "treadmill"],
+        trainers: []
+      },
+      {
+        id: "gisel_fitness_chilgok",
+        name: "지젤피트니스클럽 칠곡점",
+        area: "동천동",
+        address: "",
+        machineKeys: [],
+        trainers: []
+      },
+      {
+        id: "greenpark_fitness_sauna",
+        name: "그린파크 휘트니스 & 사우나",
+        area: "동천동",
+        address: "",
+        machineKeys: [],
+        trainers: []
+      }
+    ];
+
+    const DEFAULT_TRAINERS = [
+      { id: "dt1", name: "이지훈", role: "근력/체형 교정", years: 6, tags: ["근력", "자세교정"], score: 4.7, photo: "assets/trainer-3.jpg" },
+      { id: "dt2", name: "한서연", role: "여성 PT 전문", years: 4, tags: ["여성PT", "다이어트"], score: 4.5, photo: "assets/trainer-4.jpg" },
+      { id: "dt3", name: "정현우", role: "대회 준비", years: 8, tags: ["대회준비", "바디프로필"], score: 4.9, photo: "assets/trainer-5.jpg" }
+    ];
+
+    const TRAINER_REVIEWS = {
+      t1: [
+        { author: "박O현", rating: 5, date: "2024-11-03", text: "설명이 깔끔하고 동작 교정이 빠르게 잡혔어요.", tags: ["설명 쉬움", "교정"] },
+        { author: "김O미", rating: 5, date: "2024-10-18", text: "체형 고민을 잘 이해해주고 루틴이 체계적이에요.", tags: ["체계적", "친절함"] }
+      ],
+      t2: [
+        { author: "이O석", rating: 4, date: "2024-12-02", text: "재활 목적에 맞춰 강도를 잘 조절해줍니다.", tags: ["재활", "안전"] }
+      ],
+      dt1: [
+        { author: "정O호", rating: 5, date: "2024-09-22", text: "근력 루틴이 확실하고 피드백이 빠릅니다.", tags: ["근력", "피드백"] }
+      ],
+      dt2: [
+        { author: "윤O지", rating: 4, date: "2024-08-30", text: "운동 자세를 차분하게 알려줘서 좋아요.", tags: ["자세", "차분함"] }
+      ],
+      dt3: [
+        { author: "최O민", rating: 5, date: "2024-11-11", text: "대회 준비 전략이 구체적이고 현실적이에요.", tags: ["대회준비", "전략"] }
+      ]
+    };
+    const TRAINER_BASE_RATINGS = DEFAULT_TRAINERS.concat(gyms.flatMap(g => g.trainers || [])).reduce((acc, t) => {
+      acc[t.id] = t.score || 0;
+      return acc;
+    }, {});
+
+    const viewIntro = document.getElementById("viewIntro");
+    const viewSearch = document.getElementById("viewSearch");
+    const viewRealtime = document.getElementById("viewRealtime");
+    const viewSurvey = document.getElementById("viewSurvey");
+    const viewTrainerSurvey = document.getElementById("viewTrainerSurvey");
+    const viewTrainerDetail = document.getElementById("viewTrainerDetail");
+    const viewTrainerApply = document.getElementById("viewTrainerApply");
+    const viewOwnerApply = document.getElementById("viewOwnerApply");
+
+    const btnIntroStart = document.getElementById("btnIntroStart");
+    const searchInput = document.getElementById("searchInput");
+    const gymListEl = document.getElementById("gymList");
+    const favoriteSection = document.getElementById("favoriteSection");
+    const favoriteCard = document.getElementById("favoriteCard");
+
+    const rtGymName = document.getElementById("rtGymName");
+    const rtGymArea = document.getElementById("rtGymArea");
+    const rtFormerNames = document.getElementById("rtFormerNames");
+    const rtSizeText = document.getElementById("rtSizeText");
+    const rtSizeLabel = document.getElementById("rtSizeLabel");
+    const rtPill = document.getElementById("rtPill");
+    const rtRecommendation = document.getElementById("rtRecommendation");
+    const rtRecentCheckins = document.getElementById("rtRecentCheckins");
+    const rtRecentSurveys = document.getElementById("rtRecentSurveys");
+    const centerTypeLabel = document.getElementById("centerTypeLabel");
+    const centerTypeDesc = document.getElementById("centerTypeDesc");
+    const centerTypePreview = document.getElementById("centerTypePreview");
+
+    const btnCheckin = document.getElementById("btnCheckin");
+    const btnCheckout = document.getElementById("btnCheckout");
+    const btnFavoriteSet = document.getElementById("btnFavoriteSet");
+    const btnBackRealtime = document.getElementById("btnBackRealtime");
+    const btnBackSurvey = document.getElementById("btnBackSurvey");
+    const btnTrainerApply = document.getElementById("btnTrainerApply");
+    const btnOwnerApply = document.getElementById("btnOwnerApply");
+    const btnOwnerInfo = document.getElementById("btnOwnerInfo");
+    const btnBackTrainerSurvey = document.getElementById("btnBackTrainerSurvey");
+    const btnBackTrainerApply = document.getElementById("btnBackTrainerApply");
+    const btnBackTrainerDetail = document.getElementById("btnBackTrainerDetail");
+    const btnBackOwnerApply = document.getElementById("btnBackOwnerApply");
+
+    const trainerList = document.getElementById("trainerList");
+    const trainerContactLink = document.getElementById("trainerContactLink");
+    const trainerSurveyName = document.getElementById("trainerSurveyName");
+    const trainerDetailName = document.getElementById("trainerDetailName");
+    const trainerDetailPhoto = document.getElementById("trainerDetailPhoto");
+    const trainerDetailRole = document.getElementById("trainerDetailRole");
+    const trainerDetailMeta = document.getElementById("trainerDetailMeta");
+    const trainerDetailTags = document.getElementById("trainerDetailTags");
+    const trainerDetailFilters = document.getElementById("trainerDetailFilters");
+    const trainerDetailReviews = document.getElementById("trainerDetailReviews");
+    const btnTrainerDetailReview = document.getElementById("btnTrainerDetailReview");
+    const btnTrainerDetailContact = document.getElementById("btnTrainerDetailContact");
+    const trainerReviewForm = document.getElementById("trainerReviewForm");
+    const trainerReviewStars = document.getElementById("trainerReviewStars");
+    const trainerReviewAuthor = document.getElementById("trainerReviewAuthor");
+    const trainerReviewText = document.getElementById("trainerReviewText");
+    const trainerReviewSubmit = document.getElementById("trainerReviewSubmit");
+    const trainerQClarity = document.getElementById("trainerQClarity");
+    const trainerQPacing = document.getElementById("trainerQPacing");
+    const trainerQReselect = document.getElementById("trainerQReselect");
+
+    const surveyWait = document.getElementById("surveyWait");
+    const surveyReturn = document.getElementById("surveyReturn");
+
+    const trainerApplyForm = document.getElementById("trainerApplyForm");
+    const applyName = document.getElementById("applyName");
+    const applyContact = document.getElementById("applyContact");
+    const applyGym = document.getElementById("applyGym");
+    const applySpecialties = document.getElementById("applySpecialties");
+    const applyExperience = document.getElementById("applyExperience");
+    const btnApplySubmit = document.getElementById("btnApplySubmit");
+
+    const ownerGym = document.getElementById("ownerGym");
+    const ownerName = document.getElementById("ownerName");
+    const ownerContact = document.getElementById("ownerContact");
+    const ownerInterests = document.getElementById("ownerInterests");
+    const ownerAccessSystem = document.getElementById("ownerAccessSystem");
+    const btnOwnerSubmit = document.getElementById("btnOwnerSubmit");
+
+    const ownerInfoBackdrop = document.getElementById("ownerInfoBackdrop");
+    const ownerInfoClose = document.getElementById("ownerInfoClose");
+    const trainerPhotoBackdrop = document.getElementById("trainerPhotoBackdrop");
+    const trainerPhotoModalImg = document.getElementById("trainerPhotoModalImg");
+    const trainerPhotoClose = document.getElementById("trainerPhotoClose");
+    const trainerReviewBackdrop = document.getElementById("trainerReviewBackdrop");
+    const trainerReviewCancel = document.getElementById("trainerReviewCancel");
+    const trainerReviewTitle = document.getElementById("trainerReviewTitle");
+    const trainerReviewAvg = document.getElementById("trainerReviewAvg");
+
+    const toast = document.getElementById("toast");
+    const favoriteSuggestBackdrop = document.getElementById("favoriteSuggestBackdrop");
+    const favoriteSuggestAccept = document.getElementById("favoriteSuggestAccept");
+    const favoriteSuggestDismiss = document.getElementById("favoriteSuggestDismiss");
+
+    let selectedGym = null;
+    const viewHistory = [];
+    let currentView = "";
+    let favoriteSuggestionShown = {};
+    let pendingFavoriteGymId = null;
+    let surveyAnswers = { wait: null, time: null };
+    let surveySubmitting = false;
+    let selectedTrainer = null;
+    let trainerSurveyAnswers = { clarity: null, pacing: null, reselect: null };
+    let trainerApplySpecialties = new Set();
+    let ownerInterestSet = new Set();
+    let trainerApplySubmitting = false;
+    let ownerApplySubmitting = false;
+    let currentRealtimeCategory = "occupancy";
+    let trainerDetailFilter = null;
+    let trainerReviewRating = 0;
+
+    function sendEvent(eventName, params = {}) {
+      if (!window.gtag || GA_MEASUREMENT_ID === "G-XXXXXXXXXX") return;
+      window.gtag("event", eventName, params);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function showView(viewName, options = {}) {
+      const { pushHistory = true, pushState = true, replaceState = false, emitAnalytics = true } = options;
+      if (pushHistory && currentView && currentView !== viewName) {
+        if (viewHistory[viewHistory.length - 1] !== currentView) {
+          viewHistory.push(currentView);
+        }
+      }
+      currentView = viewName;
+      [viewIntro, viewSearch, viewRealtime, viewSurvey, viewTrainerSurvey, viewTrainerDetail, viewTrainerApply, viewOwnerApply].forEach(
+        v => v.classList.remove("active")
+      );
+      const viewMap = {
+        viewIntro,
+        viewSearch,
+        viewRealtime,
+        viewSurvey,
+        viewTrainerSurvey,
+        viewTrainerDetail,
+        viewTrainerApply,
+        viewOwnerApply
+      };
+      viewMap[viewName].classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (emitAnalytics) sendEvent("view_open", { view: viewName });
+      if (replaceState) {
+        history.replaceState({ view: viewName }, "");
+      } else if (pushState) {
+        history.pushState({ view: viewName }, "");
+      }
+      const showSearch = viewName === "viewSearch";
+      document.querySelector(".sticky-search").style.display = showSearch ? "block" : "none";
+      const footerEl = document.querySelector(".footer");
+      if (footerEl) footerEl.style.display = viewName === "viewIntro" ? "none" : "block";
+      if (viewName === "viewSearch") {
+        renderFavoriteSection();
+      }
+    }
+
+    function setRealtimeCategory(category) {
+      currentRealtimeCategory = category;
+      document.querySelectorAll("[data-realtime-category]").forEach(section => {
+        section.style.display = section.dataset.realtimeCategory === category ? "block" : "none";
+      });
+    }
+
+    function inferCenterType(gym) {
+      if (!gym) return "medium";
+      if (gym.machineKeys && gym.machineKeys.length >= 10) return "large";
+      if (gym.machineKeys && gym.machineKeys.length <= 5) return "small";
+      return "medium";
+    }
+
+    function getEffectiveMachineKeys(gym) {
+      if (gym.machineKeys && gym.machineKeys.length) return gym.machineKeys;
+      const type = inferCenterType(gym);
+      if (type === "small") return SMALL_GYM_SET;
+      if (type === "large") return LARGE_GYM_SET;
+      return MEDIUM_GYM_SET;
+    }
+
+    function getActiveCountForGym(gymId) {
+      const now = Date.now();
+      const twoHours = 2 * 60 * 60 * 1000;
+      return getSessions().filter(s => {
+        const start = new Date(s.startTimeISO).getTime();
+        return s.gymId === gymId && s.endTimeISO === null && now - start <= twoHours;
+      }).length;
+    }
+
+    function getSessions() {
+      return JSON.parse(localStorage.getItem("sessions") || "[]");
+    }
+
+    function saveSessions(sessions) {
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+    }
+
+    function pruneOldData() {
+      const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+      const pruneByTime = (key, timeField) => {
+        const items = JSON.parse(localStorage.getItem(key) || "[]");
+        const filtered = items.filter(item => {
+          const time = new Date(item[timeField] || item.timeISO || item.time).getTime();
+          return Number.isFinite(time) && time >= cutoff;
+        });
+        localStorage.setItem(key, JSON.stringify(filtered));
+      };
+      pruneByTime("sessions", "startTimeISO");
+      pruneByTime("surveys", "timeISO");
+      pruneByTime("trainerLeads", "time");
+      pruneByTime("ownerLeads", "time");
+      pruneByTime("trainerSignals", "time");
+    }
+
+    function createSession() {
+      const sessions = getSessions();
+      sessions.push({
+        gymId: selectedGym.id,
+        gymName: selectedGym.name,
+        startTimeISO: new Date().toISOString(),
+        endTimeISO: null
+      });
+      saveSessions(sessions);
+      sendEvent("check_in", { gym_name: selectedGym.name });
+    }
+
+    function checkoutSession() {
+      const sessions = getSessions();
+      const idx = [...sessions].reverse().findIndex(s => s.gymId === selectedGym.id && s.endTimeISO === null);
+      if (idx >= 0) {
+        const realIndex = sessions.length - 1 - idx;
+        sessions[realIndex].endTimeISO = new Date().toISOString();
+        saveSessions(sessions);
+      }
+    }
+
+    function getCrowdStatus(count) {
+      if (count >= 7) return "혼잡";
+      if (count >= 3) return "보통";
+      return "여유";
+    }
+
+    function renderGymList(list) {
+      gymListEl.innerHTML = "";
+      if (!list.length) {
+        gymListEl.innerHTML = `<div class="gym-area">검색 결과가 없어요.</div>`;
+        return;
+      }
+      list.forEach(gym => {
+        const count = getActiveCountForGym(gym.id);
+        const status = getCrowdStatus(count);
+        const card = document.createElement("button");
+        card.className = "card gym-card";
+        card.type = "button";
+        card.innerHTML = `
+          <div class="gym-name-row">
+            <div class="gym-name">${gym.name}</div>
+          </div>
+          <div class="gym-area">${gym.area || ""}</div>
+          <div class="pill small ${status === "혼잡" ? "red" : status === "보통" ? "yellow" : "green"}">${status}</div>
+        `;
+        card.addEventListener("click", () => {
+          selectedGym = gym;
+          sendEvent("gym_select", { gym_name: gym.name });
+          openRealtimeView();
+        });
+        gymListEl.appendChild(card);
+      });
+    }
+
+    function getTrainerSignals() {
+      return JSON.parse(localStorage.getItem("trainerSignals") || "[]");
+    }
+
+    function saveTrainerSignals(list) {
+      localStorage.setItem("trainerSignals", JSON.stringify(list));
+    }
+
+    function getTrainerStats(gymId, trainerId) {
+      const signals = getTrainerSignals().filter(s => s.gymId === gymId && s.trainerId === trainerId);
+      const total = signals.length;
+      const yesCount = signals.filter(s => s.answers.clarity === "yes" && s.answers.pacing === "yes" && s.answers.reselect === "yes").length;
+      const score = total ? Math.round((yesCount / total) * 100) : null;
+      return { total, score };
+    }
+
+    function renderTrainerList(container = trainerList) {
+      if (!container) return;
+      container.innerHTML = "";
+      if (!selectedGym) return;
+      const list = (selectedGym.trainers && selectedGym.trainers.length) ? selectedGym.trainers : DEFAULT_TRAINERS;
+      list.forEach(trainer => {
+        const stats = getTrainerStats(selectedGym.id, trainer.id);
+        const card = document.createElement("div");
+        card.className = "trainer-card";
+        const tags = (trainer.tags || []).slice(0, 3).map(t => `<span class="tag-chip">${t}</span>`).join("");
+        const meta = [
+          `${trainer.years || 0}년 경력`,
+          `평점 ${trainer.score || 0}`,
+          stats.score ? `추천 ${stats.score}%` : "응답 부족"
+        ].join(" · ");
+        const thumbLabel = (trainer.name || "TR").slice(0, 2);
+        card.innerHTML = `
+          <div class="trainer-card-head">
+            <div class="trainer-thumb${trainer.photo ? " has-image" : ""}" data-photo="${trainer.photo || ""}">${thumbLabel}</div>
+            <div>
+              <div class="gym-name">${trainer.name}</div>
+              <div class="gym-area">${trainer.role || "트레이너"}</div>
+              <div class="trainer-meta">${meta}</div>
+            </div>
+          </div>
+          <div class="tag-row">${tags}</div>
+          <div class="trainer-actions">
+            <button class="btn btn-primary btn-compact">상세정보 보기</button>
+          </div>
+        `;
+        const thumb = card.querySelector(".trainer-thumb");
+        if (trainer.photo && thumb) {
+          thumb.style.backgroundImage = `url('${trainer.photo}')`;
+        }
+        thumb?.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (trainer.photo) openImageLightbox(trainer.photo);
+        });
+        card.addEventListener("click", () => {
+          openTrainerDetail(trainer);
+        });
+          card.querySelector("button").addEventListener("click", (event) => {
+            event.stopPropagation();
+            openTrainerDetail(trainer);
+          });
+        container.appendChild(card);
+      });
+    }
+
+    function openRealtimeView(options = {}) {
+      const { pushHistory = true, pushState = true, replaceState = false, emitAnalytics = true } = options;
+      if (!selectedGym) return;
+      const activeCount = getActiveCountForGym(selectedGym.id);
+      const status = getCrowdStatus(activeCount);
+      rtGymName.textContent = selectedGym.name;
+      rtGymArea.textContent = selectedGym.area || "";
+      if (selectedGym.formerNames && selectedGym.formerNames.length) {
+        rtFormerNames.style.display = "block";
+        rtFormerNames.textContent = `이전 명칭: ${selectedGym.formerNames.join(", ")}`;
+      } else {
+        rtFormerNames.style.display = "none";
+      }
+      rtPill.textContent = status;
+      rtPill.className = `pill ${status === "혼잡" ? "red" : status === "보통" ? "yellow" : "green"}`;
+      rtRecommendation.textContent = status === "혼잡" ? "지금은 조금 붐빌 수 있어요" : status === "보통" ? "무난해요" : "지금 가도 괜찮아요";
+      rtRecentCheckins.textContent = `최근 15분 체크인 ${activeCount}명`;
+      const recentSurveys = JSON.parse(localStorage.getItem("surveys") || "[]").filter(s => s.gymId === selectedGym.id);
+      rtRecentSurveys.textContent = `최근 7일 응답 ${recentSurveys.length}건`;
+
+      const centerType = inferCenterType(selectedGym);
+      const labelMap = {
+        small: "🏡 소형/PT 중심 센터로 보여요",
+        medium: "🏋 중형 센터로 보여요",
+        large: "🏢 대형 센터로 보여요"
+      };
+      const descMap = {
+        small: "핵심 기구 위주 구성일 가능성이 높아요. 일부 인기 기구는 대기가 생길 수 있어요.",
+        medium: "프리웨이트와 주요 머신은 대부분 갖춰져 있을 가능성이 높아요.",
+        large: "머신/유산소 구성이 다양할 가능성이 높고, 피크 시간엔 혼잡도가 올라갈 수 있어요."
+      };
+      centerTypeLabel.textContent = labelMap[centerType];
+      centerTypeDesc.textContent = descMap[centerType];
+      const previewKeys = getEffectiveMachineKeys(selectedGym).slice(0, 5);
+      centerTypePreview.innerHTML = "";
+      previewKeys.forEach(key => {
+        const machine = MACHINE_MAP[key];
+        const row = document.createElement("div");
+        row.className = "machine-item";
+        row.innerHTML = `<span class="machine-icon">${machine ? machine.icon : "•"}</span><span>${machine ? machine.name : key}</span>`;
+        centerTypePreview.appendChild(row);
+      });
+
+      renderTrainerList(trainerList);
+      setRealtimeCategory(currentRealtimeCategory || "occupancy");
+      updateFavoriteButton();
+      if (emitAnalytics) {
+        sendEvent("realtime_status_view", { gym_name: selectedGym.name, active_count: activeCount });
+      }
+      showView("viewRealtime", { pushHistory, pushState, replaceState, emitAnalytics });
+    }
+
+    function navigateBack(fromPop = false) {
+      const fromView = currentView;
+      const toView = viewHistory.pop() || "viewSearch";
+      if (toView === "viewRealtime") {
+        openRealtimeView({ emitAnalytics: false, pushHistory: false, pushState: !fromPop });
+      } else {
+        showView(toView, { pushHistory: false, pushState: !fromPop, emitAnalytics: false });
+      }
+      sendEvent("view_back", { from_view: fromView, to_view: toView, timestamp_ms: Date.now() });
+    }
+
+    function openTrainerDetail(trainer) {
+      if (!trainer) return;
+      selectedTrainer = trainer;
+      trainerDetailName.textContent = trainer.name || "트레이너";
+      trainerDetailPhoto.textContent = (trainer.name || "TR").slice(0, 2);
+      if (trainer.photo) {
+        trainerDetailPhoto.classList.add("has-image");
+        trainerDetailPhoto.style.backgroundImage = `url('${trainer.photo}')`;
+      } else {
+        trainerDetailPhoto.classList.remove("has-image");
+        trainerDetailPhoto.style.backgroundImage = "none";
+      }
+      trainerDetailRole.textContent = trainer.role || "트레이너";
+      const meta = [
+        `${trainer.years || 0}년 경력`,
+        `평점 ${getTrainerDetailRating(trainer.id)}`
+      ].join(" · ");
+      trainerDetailMeta.textContent = meta;
+      trainerDetailTags.innerHTML = (trainer.tags || []).map(tag => `<span class="tag-chip">${tag}</span>`).join("");
+      trainerDetailFilter = null;
+      trainerReviewRating = 0;
+      trainerReviewStars.querySelectorAll(".star-btn").forEach(btn => btn.classList.remove("active"));
+      trainerReviewAuthor.value = "";
+      trainerReviewText.value = "";
+      renderTrainerDetailFilters(trainer);
+      renderTrainerDetailReviews(trainer);
+      showView("viewTrainerDetail");
+    }
+
+    function openImageLightbox(src) {
+      if (!src) return;
+      trainerPhotoModalImg.src = src;
+      trainerPhotoBackdrop.style.display = "flex";
+    }
+
+    function renderTrainerDetailFilters(trainer) {
+      const reviews = TRAINER_REVIEWS[trainer.id] || [];
+      const tags = [...new Set(reviews.flatMap(r => r.tags || []))];
+      if (!tags.length) {
+        trainerDetailFilters.innerHTML = "";
+        return;
+      }
+      trainerDetailFilters.innerHTML = tags.map(tag => `<button type="button" class="chip">${tag}</button>`).join("");
+      trainerDetailFilters.querySelectorAll(".chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const label = btn.textContent;
+          if (trainerDetailFilter === label) {
+            trainerDetailFilter = null;
+            trainerDetailFilters.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+          } else {
+            trainerDetailFilter = label;
+            trainerDetailFilters.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+          }
+          renderTrainerDetailReviews(trainer);
+        });
+      });
+    }
+
+    function getStoredTrainerReviews(trainerId) {
+      const all = JSON.parse(localStorage.getItem("trainerReviewsV1") || "[]");
+      return all.filter(r => r.trainerId === trainerId);
+    }
+
+    function getTrainerDetailRating(trainerId) {
+      const stored = getStoredTrainerReviews(trainerId);
+      const base = TRAINER_BASE_RATINGS[trainerId] || 0;
+      if (!stored.length) return base;
+      const avg = stored.reduce((acc, r) => acc + Number(r.rating || 0), 0) / stored.length;
+      return Math.round(((base + avg) / (base ? 2 : 1)) * 10) / 10;
+    }
+
+    function renderTrainerDetailReviews(trainer) {
+      const base = TRAINER_REVIEWS[trainer.id] || [];
+      const stored = getStoredTrainerReviews(trainer.id).map(r => ({
+        author: r.author,
+        rating: r.rating,
+        date: r.date,
+        text: r.text,
+        tags: ["사용자 작성"]
+      }));
+      const reviews = [...stored, ...base].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const filtered = trainerDetailFilter
+        ? reviews.filter(r => (r.tags || []).includes(trainerDetailFilter))
+        : reviews;
+      if (!filtered.length) {
+        trainerDetailReviews.innerHTML = `<div class="gym-area">아직 등록된 리뷰가 없어요.</div>`;
+        return;
+      }
+      const avgRating = getTrainerDetailRating(trainer.id);
+      trainerDetailMeta.textContent = [
+        `${trainer.years || 0}년 경력`,
+        `평점 ${avgRating}`
+      ].join(" · ");
+      trainerDetailReviews.innerHTML = filtered.map(review => {
+        const tags = (review.tags || []).map(tag => `<span class="tag-chip">${tag}</span>`).join("");
+        return `
+          <div class="review-item">
+            <div class="review-head">
+              <span>${review.author}</span>
+              <span>★ ${review.rating}</span>
+            </div>
+            <div class="review-meta">${review.date}</div>
+            <div class="review-body">${review.text}</div>
+            <div class="review-tag-row">${tags}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSurveyOptions() {
+      surveySubmitting = false;
+      surveyAnswers = { wait: null, time: null };
+      surveyWait.innerHTML = "";
+      surveyReturn.innerHTML = "";
+      const buildYesNo = (container, key) => {
+        ["네", "아니요"].forEach(label => {
+          const value = label === "네" ? "yes" : "no";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          btn.textContent = label;
+          btn.addEventListener("click", () => {
+            container.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+            surveyAnswers[key] = value;
+            if (surveyAnswers.wait && surveyAnswers.time) {
+              saveSurvey();
+            }
+          });
+          container.appendChild(btn);
+        });
+      };
+      buildYesNo(surveyWait, "wait");
+      buildYesNo(surveyReturn, "time");
+    }
+
+    function renderTrainerSurveyOptions() {
+      trainerSurveyAnswers = { clarity: null, pacing: null, reselect: null };
+      const buildYesNo = (container, key) => {
+        container.innerHTML = "";
+        ["네", "아니요"].forEach(label => {
+          const value = label === "네" ? "yes" : "no";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          btn.textContent = label;
+          btn.addEventListener("click", () => {
+            container.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+            trainerSurveyAnswers[key] = value;
+            if (trainerSurveyAnswers.clarity && trainerSurveyAnswers.pacing && trainerSurveyAnswers.reselect) {
+              submitTrainerSurvey();
+            }
+          });
+          container.appendChild(btn);
+        });
+      };
+      buildYesNo(trainerQClarity, "clarity");
+      buildYesNo(trainerQPacing, "pacing");
+      buildYesNo(trainerQReselect, "reselect");
+    }
+
+    function submitTrainerSurvey() {
+      if (!selectedGym || !selectedTrainer) return;
+      const signals = getTrainerSignals();
+      signals.push({
+        gymId: selectedGym.id,
+        trainerId: selectedTrainer.id,
+        time: new Date().toISOString(),
+        answers: { ...trainerSurveyAnswers }
+      });
+      saveTrainerSignals(signals);
+      sendEvent("trainer_signal_submit", {
+        gym_name: selectedGym.name,
+        trainer_id: selectedTrainer.id,
+        clarity: trainerSurveyAnswers.clarity,
+        pacing: trainerSurveyAnswers.pacing,
+        reselect: trainerSurveyAnswers.reselect
+      });
+      showToast("신호가 반영됐어요. 감사합니다 🙌");
+      const delay = 700 + Math.floor(Math.random() * 401);
+      setTimeout(() => {
+        selectedTrainer = null;
+        openRealtimeView({ pushHistory: false, pushState: false, replaceState: true, emitAnalytics: false });
+      }, delay);
+    }
+
+    function ensureApplyGymOptions() {
+      if (applyGym.dataset.ready === "true") return;
+      applyGym.innerHTML = "";
+      gyms.forEach(gym => {
+        const opt = document.createElement("option");
+        opt.value = gym.name;
+        opt.textContent = gym.name;
+        applyGym.appendChild(opt);
+      });
+      applyGym.dataset.ready = "true";
+    }
+
+    function renderApplySpecialties() {
+      const options = ["다이어트", "바디프로필", "재활", "자세교정", "근력", "여성PT", "대회준비"];
+      applySpecialties.innerHTML = "";
+      options.forEach(label => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.textContent = label;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "entry.752700585";
+        checkbox.value = label;
+        checkbox.style.display = "none";
+        btn.addEventListener("click", () => {
+          if (trainerApplySpecialties.has(label)) {
+            trainerApplySpecialties.delete(label);
+            checkbox.checked = false;
+            btn.classList.remove("active");
+            return;
+          }
+          if (trainerApplySpecialties.size >= 3) return;
+          trainerApplySpecialties.add(label);
+          checkbox.checked = true;
+          btn.classList.add("active");
+        });
+        applySpecialties.appendChild(btn);
+        applySpecialties.appendChild(checkbox);
+      });
+    }
+
+    function openTrainerApplyView() {
+      ensureApplyGymOptions();
+      renderApplySpecialties();
+      applyName.value = "";
+      applyContact.value = "";
+      applyExperience.value = "";
+      trainerApplySpecialties.clear();
+      if (selectedGym) {
+        applyGym.value = selectedGym.name;
+      }
+      sendEvent("trainer_apply_open", { gym_name: selectedGym ? selectedGym.name : "" });
+      showView("viewTrainerApply");
+    }
+
+    function submitTrainerApply() {
+      const name = applyName.value.trim();
+      const contact = applyContact.value.trim();
+      const gymName = applyGym.value;
+      const gym = gyms.find(g => g.name === gymName);
+      if (!name || !contact || !gym) {
+        showToast("필수 정보를 입력해 주세요");
+        return;
+      }
+      const leads = JSON.parse(localStorage.getItem("trainerLeads") || "[]");
+      leads.push({
+        time: new Date().toISOString(),
+        gymId: gym.id,
+        gymName: gym.name,
+        name,
+        contact,
+        specialties: Array.from(trainerApplySpecialties),
+        experience: applyExperience.value || ""
+      });
+      localStorage.setItem("trainerLeads", JSON.stringify(leads));
+      sendEvent("trainer_apply_submit", {
+        gym_name: gym.name,
+        specialties_count: trainerApplySpecialties.size,
+        experience: applyExperience.value || ""
+      });
+      showToast("신청이 접수됐어요. 확인 후 연락드릴게요 🙌");
+      const delay = 900 + Math.floor(Math.random() * 301);
+      setTimeout(() => {
+        openRealtimeView({ pushHistory: false, pushState: false, replaceState: true, emitAnalytics: false });
+      }, delay);
+    }
+
+    function ensureOwnerGymOptions() {
+      if (ownerGym.dataset.ready === "true") return;
+      ownerGym.innerHTML = "";
+      gyms.forEach(gym => {
+        const opt = document.createElement("option");
+        opt.value = gym.id;
+        opt.textContent = gym.name;
+        ownerGym.appendChild(opt);
+      });
+      ownerGym.dataset.ready = "true";
+    }
+
+    function renderOwnerInterests() {
+      const options = ["피크 시간 분석", "체류 시간 추정", "시간대별 혼잡 히트맵", "알림(피크/한산)", "트레이너 운영 리포트"];
+      ownerInterests.innerHTML = "";
+      options.forEach(label => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.textContent = label;
+        btn.addEventListener("click", () => {
+          if (ownerInterestSet.has(label)) {
+            ownerInterestSet.delete(label);
+            btn.classList.remove("active");
+            return;
+          }
+          if (ownerInterestSet.size >= 3) return;
+          ownerInterestSet.add(label);
+          btn.classList.add("active");
+        });
+        ownerInterests.appendChild(btn);
+      });
+    }
+
+    function openOwnerApplyView() {
+      ensureOwnerGymOptions();
+      renderOwnerInterests();
+      ownerName.value = "";
+      ownerContact.value = "";
+      ownerAccessSystem.value = "";
+      ownerInterestSet.clear();
+      document.querySelectorAll("input[name='ownerRole']").forEach(r => (r.checked = false));
+      if (selectedGym) {
+        ownerGym.value = selectedGym.id;
+      }
+      sendEvent("owner_demo_open", { gym_name: selectedGym ? selectedGym.name : "" });
+      showView("viewOwnerApply");
+    }
+
+    function submitOwnerApply() {
+      const gymId = ownerGym.value;
+      const gym = gyms.find(g => g.id === gymId);
+      const managerName = ownerName.value.trim();
+      const contact = ownerContact.value.trim();
+      const role = document.querySelector("input[name='ownerRole']:checked")?.value || "";
+      if (!gym || !managerName || !contact || !role) {
+        showToast("필수 정보를 입력해 주세요");
+        return;
+      }
+      const leads = JSON.parse(localStorage.getItem("ownerLeads") || "[]");
+      leads.push({
+        time: new Date().toISOString(),
+        gymId: gym.id,
+        gymName: gym.name,
+        managerName,
+        contact,
+        role,
+        interests: Array.from(ownerInterestSet),
+        accessSystem: ownerAccessSystem.value || ""
+      });
+      localStorage.setItem("ownerLeads", JSON.stringify(leads));
+      sendEvent("owner_demo_submit", {
+        gym_name: gym.name,
+        interests_count: ownerInterestSet.size,
+        accessSystem: ownerAccessSystem.value || ""
+      });
+      showToast("신청이 접수됐어요. 확인 후 연락드릴게요 🙌");
+      const delay = 900 + Math.floor(Math.random() * 301);
+      setTimeout(() => {
+        openRealtimeView({ pushHistory: false, pushState: false, replaceState: true, emitAnalytics: false });
+      }, delay);
+    }
+
+    function saveSurvey() {
+      if (surveySubmitting) return;
+      if (!selectedGym) return;
+      if (!surveyAnswers.wait || !surveyAnswers.time) return;
+      surveySubmitting = true;
+      const surveys = JSON.parse(localStorage.getItem("surveys") || "[]");
+      const waited = surveyAnswers.wait === "yes" ? ["waited"] : [];
+      surveys.push({
+        gymId: selectedGym.id,
+        gymName: selectedGym.name,
+        timeISO: new Date().toISOString(),
+        perceivedCrowd: "여유",
+        waited_machines: waited,
+        wait_any: surveyAnswers.wait,
+        revisit_intent: surveyAnswers.time
+      });
+      localStorage.setItem("surveys", JSON.stringify(surveys));
+      sendEvent("survey_submit", { gym_name: selectedGym.name, perceived_crowd: "여유", waited_machines_count: waited.length });
+      showToast("운동 기록이 반영됐어요. 고마워요 💪");
+      const delay = 900 + Math.floor(Math.random() * 301);
+      setTimeout(() => {
+        selectedGym = null;
+        showView("viewSearch", { pushHistory: false, pushState: false, replaceState: true });
+      }, delay);
+    }
+
+    function getFavoriteGymId() {
+      return localStorage.getItem("favoriteGymId");
+    }
+
+    function setFavoriteGymId(id) {
+      localStorage.setItem("favoriteGymId", id);
+    }
+
+    function clearFavoriteGymId() {
+      localStorage.removeItem("favoriteGymId");
+    }
+
+    function updateFavoriteButton() {
+      if (!selectedGym) return;
+      const favId = getFavoriteGymId();
+      btnFavoriteSet.textContent = favId === selectedGym.id ? "내 헬스장 해제" : "내 헬스장으로 설정";
+    }
+
+    function renderFavoriteSection() {
+      const favId = getFavoriteGymId();
+      if (!favId) {
+        favoriteSection.style.display = "none";
+        return;
+      }
+      const gym = gyms.find(g => g.id === favId);
+      if (!gym) {
+        favoriteSection.style.display = "none";
+        return;
+      }
+      favoriteSection.style.display = "block";
+      favoriteCard.innerHTML = "";
+      const card = document.createElement("button");
+      card.className = "card gym-card";
+      card.type = "button";
+      card.innerHTML = `
+        <div class="gym-name-row">
+          <div class="gym-name">${gym.name}</div>
+        </div>
+        <div class="gym-area">${gym.area || ""}</div>
+      `;
+      card.addEventListener("click", () => {
+        selectedGym = gym;
+        openRealtimeView();
+      });
+      favoriteCard.appendChild(card);
+    }
+
+    // HOME NAV ADDED
+    function openHomeTarget(targetId, viewName) {
+      if (viewName === "viewRealtime") {
+        if (!selectedGym) {
+          showView("viewSearch");
+          showToast("먼저 헬스장을 선택해 주세요");
+          requestAnimationFrame(() => {
+            const el = document.getElementById("occupancy");
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+          return;
+        }
+        if (targetId === "equipment") {
+          currentRealtimeCategory = "equipment";
+        } else if (targetId === "trainers") {
+          currentRealtimeCategory = "trainers";
+        } else {
+          currentRealtimeCategory = "occupancy";
+        }
+        openRealtimeView({ pushHistory: true });
+      } else if (viewName === "viewTrainerApply") {
+        openTrainerApplyView();
+      } else {
+        showView(viewName);
+      }
+      requestAnimationFrame(() => {
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
+    btnIntroStart.addEventListener("click", () => {
+      showView("viewSearch");
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.trim();
+      const filtered = gyms.filter(g => g.name.includes(term));
+      renderGymList(filtered);
+    });
+
+    btnCheckin.addEventListener("click", () => {
+      if (!selectedGym) return;
+      createSession();
+      sendEvent("gym_arrive_click", { gym_name: selectedGym.name });
+      showToast("체크인 완료! 감사합니다 🙌");
+    });
+
+    btnCheckout.addEventListener("click", () => {
+      if (!selectedGym) return;
+      checkoutSession();
+      renderSurveyOptions();
+      showView("viewSurvey");
+    });
+
+    btnBackRealtime.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnBackSurvey.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnBackTrainerSurvey.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnBackTrainerDetail.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnTrainerDetailReview.addEventListener("click", () => {
+      if (!selectedTrainer) return;
+      trainerReviewTitle.textContent = `${selectedTrainer.name} 리뷰 남기기`;
+      trainerReviewAvg.textContent = `평점 ${getTrainerDetailRating(selectedTrainer.id)}`;
+      document.body.style.overflow = "hidden";
+      trainerReviewBackdrop.style.display = "flex";
+      trainerReviewBackdrop.classList.add("show");
+      trainerReviewText.focus();
+    });
+
+    btnTrainerDetailContact.addEventListener("click", () => {
+      if (!selectedTrainer || !selectedGym) return;
+      const mailSubject = encodeURIComponent(`[GymNow] 트레이너 상담 문의 (${selectedTrainer.name})`);
+      const mailBody = encodeURIComponent(`헬스장: ${selectedGym.name}\n트레이너: ${selectedTrainer.name}\n문의 내용: `);
+      window.location.href = `mailto:hello@example.com?subject=${mailSubject}&body=${mailBody}`;
+    });
+
+    trainerReviewStars.querySelectorAll(".star-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        trainerReviewRating = Number(btn.dataset.rating);
+        trainerReviewStars.querySelectorAll(".star-btn").forEach(s => s.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    trainerReviewSubmit.addEventListener("click", () => {
+      if (!selectedTrainer) return;
+      const rating = trainerReviewRating;
+      const text = trainerReviewText.value.trim();
+      if (!rating || !text) {
+        showToast("별점과 리뷰 내용을 입력해 주세요");
+        return;
+      }
+      const author = trainerReviewAuthor.value.trim() || "익명";
+      const payload = {
+        trainerId: selectedTrainer.id,
+        author,
+        rating,
+        text,
+        date: new Date().toISOString().slice(0, 10)
+      };
+      const list = JSON.parse(localStorage.getItem("trainerReviewsV1") || "[]");
+      list.push(payload);
+      localStorage.setItem("trainerReviewsV1", JSON.stringify(list));
+      trainerReviewText.value = "";
+      trainerReviewAuthor.value = "";
+      trainerReviewRating = 0;
+      trainerReviewStars.querySelectorAll(".star-btn").forEach(s => s.classList.remove("active"));
+      showToast("리뷰가 등록됐어요. 감사합니다 🙌");
+      renderTrainerDetailReviews(selectedTrainer);
+      trainerReviewBackdrop.classList.remove("show");
+      setTimeout(() => {
+        trainerReviewBackdrop.style.display = "none";
+        document.body.style.overflow = "";
+      }, 180);
+    });
+
+    trainerReviewCancel.addEventListener("click", () => {
+      trainerReviewBackdrop.classList.remove("show");
+      setTimeout(() => {
+        trainerReviewBackdrop.style.display = "none";
+        document.body.style.overflow = "";
+      }, 180);
+    });
+
+    trainerReviewBackdrop.addEventListener("click", (event) => {
+      if (event.target === trainerReviewBackdrop) {
+        trainerReviewBackdrop.classList.remove("show");
+        setTimeout(() => {
+          trainerReviewBackdrop.style.display = "none";
+          document.body.style.overflow = "";
+        }, 180);
+      }
+    });
+
+    btnBackTrainerApply.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnTrainerApply.addEventListener("click", () => {
+      openTrainerApplyView();
+    });
+
+    trainerContactLink.addEventListener("click", () => {
+      if (selectedGym) {
+        const mailSubject = encodeURIComponent(`[GymNow] 트레이너 등록 문의 (${selectedGym.name})`);
+        const mailBody = encodeURIComponent(`헬스장: ${selectedGym.name}\n문의 목적: 트레이너 등록 신청/상담 문의`);
+        trainerContactLink.href = `mailto:hello@example.com?subject=${mailSubject}&body=${mailBody}`;
+        sendEvent("trainer_contact_click", { gym_name: selectedGym.name });
+      }
+    });
+
+    trainerApplyForm.addEventListener("submit", (event) => {
+      if (trainerApplySubmitting) {
+        event.preventDefault();
+        return;
+      }
+      const name = applyName.value.trim();
+      const contact = applyContact.value.trim();
+      const gymName = applyGym.value;
+      const gym = gyms.find(g => g.name === gymName);
+      if (!name || !contact || !gym) {
+        event.preventDefault();
+        showToast("필수 정보를 입력해 주세요");
+        return;
+      }
+      trainerApplySubmitting = true;
+      btnApplySubmit.disabled = true;
+      submitTrainerApply();
+      setTimeout(() => {
+        alert("신청이 정상적으로 접수되었습니다!");
+      }, 200);
+      setTimeout(() => {
+        trainerApplySubmitting = false;
+        btnApplySubmit.disabled = false;
+      }, 1200);
+    });
+
+    btnOwnerApply.addEventListener("click", () => {
+      openOwnerApplyView();
+    });
+
+    btnOwnerInfo.addEventListener("click", () => {
+      ownerInfoBackdrop.style.display = "flex";
+    });
+
+    ownerInfoClose.addEventListener("click", () => {
+      ownerInfoBackdrop.style.display = "none";
+    });
+
+    ownerInfoBackdrop.addEventListener("click", (e) => {
+      if (e.target === ownerInfoBackdrop) {
+        ownerInfoBackdrop.style.display = "none";
+      }
+    });
+
+    trainerPhotoClose.addEventListener("click", () => {
+      trainerPhotoBackdrop.style.display = "none";
+    });
+
+    trainerPhotoBackdrop.addEventListener("click", (e) => {
+      if (e.target === trainerPhotoBackdrop) {
+        trainerPhotoBackdrop.style.display = "none";
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (trainerPhotoBackdrop.style.display === "flex") {
+        trainerPhotoBackdrop.style.display = "none";
+      }
+      if (trainerReviewBackdrop.style.display === "flex") {
+        trainerReviewBackdrop.classList.remove("show");
+        setTimeout(() => {
+          trainerReviewBackdrop.style.display = "none";
+          document.body.style.overflow = "";
+        }, 180);
+      }
+    });
+
+    btnOwnerSubmit.addEventListener("click", () => {
+      if (ownerApplySubmitting) return;
+      const gymId = ownerGym.value;
+      const gym = gyms.find(g => g.id === gymId);
+      const managerName = ownerName.value.trim();
+      const contact = ownerContact.value.trim();
+      const role = document.querySelector("input[name='ownerRole']:checked")?.value || "";
+      if (!gym || !managerName || !contact || !role) {
+        showToast("필수 정보를 입력해 주세요");
+        return;
+      }
+      ownerApplySubmitting = true;
+      btnOwnerSubmit.disabled = true;
+      submitOwnerApply();
+      setTimeout(() => {
+        alert("신청이 정상적으로 접수되었습니다!");
+      }, 200);
+      setTimeout(() => {
+        ownerApplySubmitting = false;
+        btnOwnerSubmit.disabled = false;
+      }, 1200);
+    });
+
+    btnBackOwnerApply.addEventListener("click", () => {
+      navigateBack();
+    });
+
+    btnFavoriteSet.addEventListener("click", () => {
+      const favId = getFavoriteGymId();
+      if (favId && selectedGym && favId === selectedGym.id) {
+        clearFavoriteGymId();
+        updateFavoriteButton();
+        renderFavoriteSection();
+        showToast("내 헬스장 설정이 해제됐어요");
+        sendEvent("favorite_unset", { gym_name: selectedGym.name });
+        return;
+      }
+      if (!selectedGym) return;
+      setFavoriteGymId(selectedGym.id);
+      updateFavoriteButton();
+      renderFavoriteSection();
+      showToast("내 헬스장으로 설정됐어요");
+      sendEvent("favorite_set", { gym_name: selectedGym.name });
+    });
+
+    favoriteSuggestAccept.addEventListener("click", () => {
+      if (!pendingFavoriteGymId) return;
+      const gym = gyms.find(g => g.id === pendingFavoriteGymId);
+      setFavoriteGymId(pendingFavoriteGymId);
+      updateFavoriteButton();
+      renderFavoriteSection();
+      favoriteSuggestBackdrop.style.display = "none";
+      pendingFavoriteGymId = null;
+      if (gym) sendEvent("favorite_set", { gym_name: gym.name });
+      sendEvent("favorite_suggest_accept");
+      showToast("내 헬스장으로 설정됐어요");
+    });
+
+    favoriteSuggestDismiss.addEventListener("click", () => {
+      if (!pendingFavoriteGymId) return;
+      const dismissed = JSON.parse(localStorage.getItem("favoriteSuggestDismissed") || "{}");
+      dismissed[pendingFavoriteGymId] = true;
+      localStorage.setItem("favoriteSuggestDismissed", JSON.stringify(dismissed));
+      favoriteSuggestBackdrop.style.display = "none";
+      pendingFavoriteGymId = null;
+      sendEvent("favorite_suggest_dismiss");
+    });
+
+    favoriteSuggestBackdrop.addEventListener("click", (e) => {
+      if (e.target === favoriteSuggestBackdrop) {
+        const dismissed = JSON.parse(localStorage.getItem("favoriteSuggestDismissed") || "{}");
+        if (pendingFavoriteGymId) dismissed[pendingFavoriteGymId] = true;
+        localStorage.setItem("favoriteSuggestDismissed", JSON.stringify(dismissed));
+        favoriteSuggestBackdrop.style.display = "none";
+        pendingFavoriteGymId = null;
+        sendEvent("favorite_suggest_dismiss");
+      }
+    });
+
+    // HOME NAV ADDED
+    document.querySelectorAll("[data-home-target]").forEach(card => {
+      card.addEventListener("click", () => {
+        const targetId = card.getAttribute("data-home-target");
+        const viewName = card.getAttribute("data-home-view");
+        openHomeTarget(targetId, viewName);
+      });
+    });
+
+    (function loadGA(){
+      if (GA_MEASUREMENT_ID === "G-XXXXXXXXXX") return;
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+      document.head.appendChild(script);
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);} 
+      window.gtag = window.gtag || gtag;
+      gtag("js", new Date());
+      gtag("config", GA_MEASUREMENT_ID);
+    })();
+
+    pruneOldData();
+    renderGymList(gyms);
+    history.replaceState({ view: "viewIntro" }, "");
+    showView("viewIntro", { pushHistory: false, pushState: false });
+
+    window.addEventListener("popstate", () => {
+      navigateBack(true);
+    });
+  </script>
+</body>
+</html>
