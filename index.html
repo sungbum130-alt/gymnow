@@ -735,7 +735,7 @@
       justify-items: center;
     }
     .intro-logo {
-      width: clamp(280px, 80vw, 380px);
+      width: clamp(400px, 90vw, 480px);
       height: auto;
       display: block;
     }
@@ -862,20 +862,26 @@
       <div class="intro-hero">
         <div class="intro-card">
           <img class="intro-logo" src="./logo.png" alt="GymNow 로고" />
-          <h1 class="intro-title">오늘의 헬스장을 선택하세요.</h1>
-          <p class="intro-subtitle">실시간 혼잡도를 깔끔하게 확인합니다.</p>
-          <button id="btnIntroStart" class="btn btn-primary">시작하기</button>
+          <h1 class="intro-title">대구 북구 칠곡 헬스장 혼잡도 트레이너 정보</h1>
+          <p class="intro-subtitle">체크인짧은 설문으로 만드는 시간대 혼잡도(추정)와<br />트레이너/헬스장 선택에 필요한 정보를 한곳에서 확인하세요.</p>
+          <div class="actions">
+            <button id="btnIntroUser" class="btn btn-primary">회원/이용자: 지금 가도 될지 확인</button>
+            <button id="btnIntroOwner" class="btn btn-outline">운영자: 인사이트 데모 신청</button>
+          </div>
+          <div class="gym-area">베타: 데이터는 체크인/설문 기반으로 집계되며, 정확도는 점진적으로 개선됩니다.</div>
         </div>
       </div>
     </section>
 
     <section id="viewSearch" class="view">
-      <div class="section" id="favoriteSection" style="display:none;">
-        <div class="section-title">내 헬스장</div>
-        <div id="favoriteCard" class="gym-list" aria-live="polite"></div>
+      <div id="gyms">
+        <div class="section" id="favoriteSection" style="display:none;">
+          <div class="section-title">내 헬스장</div>
+          <div id="favoriteCard" class="gym-list" aria-live="polite"></div>
+        </div>
+        <div class="section-title" id="occupancy">헬스장 목록</div>
+        <div id="gymList" class="gym-list" aria-live="polite"></div>
       </div>
-      <div class="section-title" id="occupancy">헬스장 목록</div>
-      <div id="gymList" class="gym-list" aria-live="polite"></div>
     </section>
 
     <section id="viewRealtime" class="view">
@@ -1098,7 +1104,7 @@
     </section>
 
     <section id="viewOwnerApply" class="view">
-      <div class="card">
+      <div class="card" id="owners">
         <button id="btnBackOwnerApply" class="link-btn">← 뒤로</button>
         <div class="section-title">운영자 데모 신청</div>
         <div class="gym-area">3분이면 끝나요. 현재는 일부 센터만 베타 운영 중이에요.</div>
@@ -1323,7 +1329,8 @@
     const viewTrainerApply = document.getElementById("viewTrainerApply");
     const viewOwnerApply = document.getElementById("viewOwnerApply");
 
-    const btnIntroStart = document.getElementById("btnIntroStart");
+    const btnIntroUser = document.getElementById("btnIntroUser");
+    const btnIntroOwner = document.getElementById("btnIntroOwner");
     const searchInput = document.getElementById("searchInput");
     const gymListEl = document.getElementById("gymList");
     const favoriteSection = document.getElementById("favoriteSection");
@@ -2178,9 +2185,25 @@
       });
     }
 
-    btnIntroStart.addEventListener("click", () => {
-      showView("viewSearch");
-    });
+    if (btnIntroUser) {
+      btnIntroUser.addEventListener("click", () => {
+        showView("viewSearch");
+        requestAnimationFrame(() => {
+          const el = document.getElementById("gyms");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
+
+    if (btnIntroOwner) {
+      btnIntroOwner.addEventListener("click", () => {
+        showView("viewOwnerApply");
+        requestAnimationFrame(() => {
+          const el = document.getElementById("owners");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
 
     searchInput.addEventListener("input", (e) => {
       const term = e.target.value.trim();
